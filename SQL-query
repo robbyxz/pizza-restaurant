@@ -1,0 +1,100 @@
+-- KPI's
+-- Total revenue
+
+SELECT 
+SUM(total_price) AS Total_revenue
+FROM dbo.pizza_sales
+
+
+-- Average order value
+
+SELECT 
+SUM(total_price)/COUNT(DISTINCT order_id) AS Average_order_value
+FROM pizza_sales
+
+
+-- Total pizzas sold
+
+SELECT 
+SUM(quantity) as Total_pizzas_sold
+FROM pizza_sales
+
+-- Total orders placed
+
+SELECT 
+COUNT(DISTINCT order_id) AS Total_orders
+FROM dbo.pizza_sales
+
+-- Average sold pizzas per order
+
+SELECT 
+CAST(CAST(SUM(quantity) AS DECIMAL(10,2))/CAST(COUNT(DISTINCT ORDER_ID) AS DECIMAL(10,2)) AS DECIMAL(10,2)) AS Avg_sold_pizza_per_order
+FROM pizza_sales
+
+-- CHARTS
+-- Daily trend for total order
+
+SELECT
+DATENAME(DW, order_date) AS order_day,
+COUNT(DISTINCT order_id) AS Total_orders
+FROM pizza_sales
+GROUP BY DATENAME(DW, order_date)
+
+-- Hourly trend for total orders
+
+SELECT
+DATEPART(HOUR, order_time) AS order_hours,
+COUNT(DISTINCT order_id) AS Total_orders
+FROM pizza_sales
+GROUP BY DATEPART(HOUR, order_time)
+ORDER BY DATEPART(HOUR, order_time)
+
+-- Percantage of sales by pizza category
+
+SELECT
+pizza_category,
+CAST(SUM(total_price) AS DECIMAL(10,2)) AS Total_sales,
+CAST(SUM(total_price) * 100 / (SELECT SUM(total_price) FROM pizza_sales WHERE MONTH(order_date) = 1) AS DECIMAL(10,2)) AS PCT_Total_Sale
+FROM pizza_sales
+WHERE MONTH(order_date) = 1 -- Filter of each month
+GROUP BY pizza_category
+
+-- Percantage of sales pizza by size
+
+SELECT
+pizza_size,
+CAST(SUM(total_price) AS DECIMAL(10,2)) AS Total_sales,
+CAST(SUM(total_price) * 100 / (SELECT SUM(total_price) FROM pizza_sales WHERE MONTH(order_date) = 1) AS DECIMAL(10,2)) AS PCT_Total_Sale
+FROM pizza_sales
+WHERE MONTH(order_date) = 1 -- Filter of each month
+GROUP BY pizza_size
+ORDER BY PCT_Total_Sale DESC
+
+-- Total pizzas sold by pizza category
+
+SELECT *
+FROM pizza_sales
+
+SELECT 
+pizza_category,
+SUM(quantity) as Total_pizzas
+FROM pizza_sales
+GROUP BY pizza_category
+
+-- Top 5 best sellers by total pizza sold
+
+SELECT 
+TOP 5(pizza_name),
+SUM(quantity) AS Total_pizza_sold
+FROM pizza_sales
+GROUP BY pizza_name
+ORDER BY total_pizza_sold DESC
+
+-- 5 worst sellers by total pizza sold
+
+SELECT 
+TOP 5(pizza_name),
+SUM(quantity) AS Total_pizza_sold
+FROM pizza_sales
+GROUP BY pizza_name
+ORDER BY total_pizza_sold
